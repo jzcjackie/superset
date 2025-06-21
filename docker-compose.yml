@@ -41,29 +41,29 @@ x-common-build: &common-build
     BUILD_TRANSLATIONS: ${BUILD_TRANSLATIONS:-false}
 
 services:
-  nginx:
-    env_file:
-      - path: docker/.env # default
-        required: true
-      - path: docker/.env-local # optional override
-        required: false
-    image: nginx:latest
-    container_name: superset_nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./docker/nginx/templates:/etc/nginx/templates:ro
+#  nginx:
+#    env_file:
+#      - path: docker/.env # default
+#        required: true
+#      - path: docker/.env-local # optional override
+#        required: false
+#    image: nginx:latest
+#    container_name: superset_nginx
+#    restart: unless-stopped
+#    ports:
+#      - "80:80"
+#    extra_hosts:
+#      - "host.docker.internal:host-gateway"
+#    volumes:
+#      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+#      - ./docker/nginx/templates:/etc/nginx/templates:ro
 
   redis:
     image: redis:7
     container_name: superset_cache
     restart: unless-stopped
     ports:
-      - "127.0.0.1:6379:6379"
+      - "127.0.0.1:26379:6379"
     volumes:
       - redis:/data
 
@@ -77,7 +77,7 @@ services:
     container_name: superset_db
     restart: unless-stopped
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:25432:5432"
     volumes:
       - db_home:/var/lib/postgresql/data
       - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
@@ -94,9 +94,9 @@ services:
     command: ["/app/docker/docker-bootstrap.sh", "app"]
     restart: unless-stopped
     ports:
-      - 8088:8088
+      - 28088:8088
       # When in cypress-mode ->
-      - 8081:8081
+      - 28081:8081
     extra_hosts:
       - "host.docker.internal:host-gateway"
     user: *superset-user
@@ -105,15 +105,15 @@ services:
         condition: service_completed_successfully
     volumes: *superset-volumes
 
-  superset-websocket:
-    container_name: superset_websocket
-    build: ./superset-websocket
-    ports:
-      - 8080:8080
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    depends_on:
-      - redis
+#  superset-websocket:
+#    container_name: superset_websocket
+#    build: ./superset-websocket
+#    ports:
+#      - 8080:8080
+#    extra_hosts:
+#      - "host.docker.internal:host-gateway"
+#    depends_on:
+#      - redis
     # Mount everything in superset-websocket into container and
     # then exclude node_modules and dist with bogus volume mount.
     # This is necessary because host and container need to have
@@ -124,19 +124,19 @@ services:
     # For example, node_modules may contain libs with native bindings.
     # Those bindings need to be compiled for each OS and the container
     # OS is not necessarily the same as host OS.
-    volumes:
-      - ./superset-websocket:/home/superset-websocket
-      - /home/superset-websocket/node_modules
-      - /home/superset-websocket/dist
+#    volumes:
+#      - ./superset-websocket:/home/superset-websocket
+#      - /home/superset-websocket/node_modules
+#      - /home/superset-websocket/dist
 
       # Mounting a config file that contains a dummy secret required to boot up.
       # do not use this docker compose in production
-      - ./docker/superset-websocket/config.json:/home/superset-websocket/config.json
-    environment:
-      - PORT=8080
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_SSL=false
+#      - ./docker/superset-websocket/config.json:/home/superset-websocket/config.json
+#    environment:
+#      - PORT=8080
+#      - REDIS_HOST=redis
+#      - REDIS_PORT=6379
+#      - REDIS_SSL=false
 
   superset-init:
     build:
