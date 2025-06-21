@@ -133,6 +133,8 @@ export default function transformProps(
 
   let focusedSeries: string | null = null;
 
+  console.log("queriesData", queriesData)
+
   const {
     verboseMap = {},
     currencyFormats = {},
@@ -149,6 +151,25 @@ export default function transformProps(
     ...getColtypesMapping(queriesData[0]),
     ...getColtypesMapping(queriesData[1]),
   };
+
+  let monthKeyTmp = null
+  let yearKeyTmp = null
+  console.log("before", labelMapB)
+  if(labelMapB != null && labelMapB instanceof Object){
+      let keysTmp = Object.keys(labelMapB)
+      console.log("keys", keysTmp)
+      keysTmp.forEach(keyTmp => {
+        console.log(keyTmp)
+        if(keyTmp.endsWith("30 days ago")){
+          monthKeyTmp = keyTmp
+        }else if(keyTmp.endsWith("1 year ago")){
+          yearKeyTmp = keyTmp
+        }
+      })
+  }
+
+  console.log("after", labelMapB)
+
   const {
     area,
     areaB,
@@ -541,7 +562,7 @@ export default function transformProps(
   const { setDataMask = () => {}, onContextMenu } = hooks;
   const alignTicks = yAxisIndex !== yAxisIndexB;
 
-  const echartOptions: EChartsCoreOption = {
+  let echartOptions: EChartsCoreOption = {
     useUTC: true,
     grid: {
       ...defaultGrid,
@@ -736,6 +757,22 @@ export default function transformProps(
   const onFocusedSeries = (seriesName: string | null) => {
     focusedSeries = seriesName;
   };
+
+  console.log("export:", echartOptions)
+
+  console.log("monthKeyTmp:", monthKeyTmp, yearKeyTmp)
+  if(null != monthKeyTmp || null != yearKeyTmp){
+    let jsonTmp = JSON.stringify(echartOptions)
+    if(null != monthKeyTmp){
+      jsonTmp = jsonTmp.replaceAll(monthKeyTmp, "同比")
+    }
+    if(null != yearKeyTmp){
+      jsonTmp = jsonTmp.replaceAll(yearKeyTmp, "环比")
+    }
+    echartOptions = JSON.parse(jsonTmp)
+
+    console.log("export after:", echartOptions)
+  }
 
   return {
     formData,
